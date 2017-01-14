@@ -1,12 +1,28 @@
 \section{Introduction}
-\textbf{Hello, I'm a citation! \cite{mathes1976designing}.}
-\lipsum[2]
-\subsection{Problem statement}
-\textbf{Hello, I'm another citation! \cite{miller1979humanistic}}.
-\lipsum[1-2]
-\subsection{Summary of the work}
-\lipsum[2]
+Throughout the years, a lot of efforts were spent to study and derive the laws that govern the motion of a pendulum. \\
+In many classical experiments, an observer measures directly the necessary physical quantities in order to estimate some other ones. \\
+In our setting, We used an STM32F4Discovery (from now simply Discovery) board that, together with its sensors and an algorithm, it is able to compute directly and provide to the observer the requested results while the experiment is performed. \\
+The Discovery board is an electronic device equipped with an ARM CortexM4 microcontroller and various on-board devices. For this project, we used the LIS3DSH accelerometer that measures accelerations of the board in the three axes, and a serial port that enables communication between the board and a Personal Computer that eventually displays the results. \\
 
+\subsection{Problem statement}
+A pendulum it is a well studied physical system in which a weight is suspended from a pivot and it is able to oscillate freely. It is often difficult to find exact solutions in the general case so usually, some assumptions are made in order to make the problem easier to model and solve. \\
+In our case we model the setting as a simple gravity pendulum, i.e. We assumed that:
+\begin{itemize}
+	\item the rod or cord on which the bob swings is massless, inextensible and always remains taut,
+	\item the bob is a point mass,
+	\item motion occurs only in two dimensions,
+	\item the gravitational field is uniform,
+	\item the support does not move.
+\end{itemize}
+It is trivial to map the abstract case with our concrete one, in particular, the Discovery board is our bob and the USB cable is the rod. \\
+The aim of the project is to estimate the length of the cable while the board oscillates.
+\subsection{Summary of the work}
+Our work can be divided in three distinct phases:
+\begin{itemize}
+	\item we analyzed the datasheet of on-board accelerometer and developed a driver that it is able to interact with it while exposing a high-level interface that simplified interaction,
+	\item we derived the mathematical model of the physical system in order to be able to separate between variables that we can measure and the unknown that we should compute,
+	\item we put all together by means of an algorithm coupled with some parameter tuning and complementary solutions as a result of various experiments. 
+\end{itemize}
 \pagebreak
 
 \section{Design and implementation}
