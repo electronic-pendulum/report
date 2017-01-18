@@ -33,17 +33,14 @@ We will see the mathematical model, how to calculate the data we need ($\theta_{
 
 \subsection{Mathematical Model}
 We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: 
-\begin{center}
-	$T = 2 \pi \sqrt{\frac{L}{g}} (1 + \frac{1}{16} \theta_0^2 + \frac{11}{3072} \theta_0^4 + ...)$\\
-\end{center}
+$$T = 2 \pi \sqrt{\frac{L}{g}} \left(1 + \frac{1}{16} \theta_0^2 + \frac{11}{3072} \theta_0^4 + ...\right)$$
 Stopping at the second term of the series we are able to calculate the length of the wire ($L$) using period and $\theta_0$, i.e. $\theta_{max}$ , we obtain:
-\begin{center}
-	$ L = g \cdot \frac{period^2}{4 \cdot \pi^2 \cdot (1 + \frac{\theta_0^2}{16})^2}$
-\end{center}\par
+$$ L = g \cdot \frac{T^2}{4 \cdot \pi^2 \cdot \left(1 + \frac{\theta_0^2}{16}\right)^2}$$
+\par
 We can see that if we had used only one term of the series we would not have needed to calculate the $\theta_{max}$, but of course there is an error which increases for larger amplitude. In our application we cannot afford this error since, as we will see, in fact there are other imprecisions due to measurement errors and approximations, and the experiment is conducted using large amplitude.\\
 We calculated the errors according to the values obtained using 3 members of the series in table \prettyref{tab:errors}.  
 
-\begin{table}
+\begin{table}[H]
 	\small
 	\begin{center}
 		
@@ -67,9 +64,7 @@ Since there is friction that is not considered in our mathematical model we have
 
 We have considered only a quarter of period, we have considered every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
 We store the min value of accelerometer for y axis, that is easily converted in an angle using:
-\begin{center}
-	$angle = \frac{\pi}{2} -asin(min(1.0, abs(\frac{y}{SCALE \cdot g})))$\\
-\end{center}
+$$angle = \frac{\pi}{2} -\arcsin\left(\min\left\lbrace1.0, \left|\frac{y}{SCALE \cdot g}\right|\right\rbrace\right)$$
 The min function is used to avoid problems due to errors of accelerometer that could give values higher than 1. We used also abs since the sign is not important and this simplify everything.
 Besides store this we store also the timestamps of min value of y axis.\\
 We know that the max value of y axis when the pendulum is in vertical position, so when we see that the y is decrementing the pendulum is going up on the other side. So we have all data to calculate what we need.\par
@@ -88,16 +83,12 @@ There are two main problems:
 
 Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETES, so we needed just to find them.\\
 To do that we put the card in the two horizontal position and applied the following formula for each of both sides:
-\begin{center}
-	$ offset = \frac{abs(1000-real\_value)}{2}$
-\end{center}\\
-then we have taken the mean of both values.\\
+$$ offset = \frac{\left|1000-raw\_value\right|}{2}$$
+then we have taken the mean of both values. \\
 The values can have a little difference due to other errors not related to shift.\par
 
 While for the second problem we decided to implement a low pass filter to filter the data, the formula used is:
-\begin{center}
-	$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$
-\end{center}\\
+$$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 \textbf{CITE}\\
 Where y is the value stored and x is the raw value.\\
 Of course the higher alpha is, the more high frequency values are considered so the new value has an higher weight.
