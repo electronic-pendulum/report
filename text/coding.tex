@@ -29,14 +29,14 @@ Our work can be divided in three distinct phases:
 \textbf{Maybe the following text should be inserted in "summary of the work"}
 
 We drafted the algorithm to calculate the length of the wire. We decided to implement this algorithm in a raw simulator built by us in Javascript \cite{javascriptPrototype}. Then we developed it in MIOSIX.\\
-We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period) using raw data obtained by the accelerometer and how to filter raw data.
+We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period) using raw data obtained by the accelerometer and how to filter and clean raw data.
 
 \subsection{Mathematical Model}
-We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: \\
+We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: 
 \begin{center}
 	$T = 2 \pi \sqrt{\frac{L}{g}} (1 + \frac{1}{16} \theta_0^2 + \frac{11}{3072} \theta_0^4 + ...)$\\
 \end{center}
-Stopping at the second term of the series we are able to calculate the length of the wire ($L$) using period and $\theta_0$, i.e. $\theta_{max}$ , we obtain:\\
+Stopping at the second term of the series we are able to calculate the length of the wire ($L$) using period and $\theta_0$, i.e. $\theta_{max}$ , we obtain:
 \begin{center}
 	$ L = g \cdot \frac{period^2}{4 \cdot \pi^2 \cdot (1 + \frac{\theta_0^2}{16})^2}$
 \end{center}\par
@@ -60,7 +60,7 @@ We calculated the errors according to the values obtained using 3 members of the
 	\end{center}
 \end{table}
 
-As we will see the max angle of the pendulum is of $\frac{\pi}{2}$ for that value the error is just of 1.8\%, an acceptable value.
+Since the pendulum is moved only by the ground acceleration and the wire is not rigid the max angle of the pendulum is of $\frac{\pi}{2}$ for that value the error is just of 1.8\%, an acceptable value.
 
 \subsection{Calculation of Data}
 Since there is friction that is not considered in our mathematical model we have to calculate period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact there a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this errors is smaller than error caused by friction. \textbf{HOW TO PROOF?}\par
@@ -78,29 +78,38 @@ The $\theta_{max}$ is given by the  angle previous calculated (angle for min val
 The period is given by the difference of timestamps, timestamp stored for min value of y axis and timestamp of vertical position (last position before decrementing).
 Of course we recognize that we have completed period in the next tick, when we are decrementing as explained previously. So we need to keep an history of the previous timestamp to use in the calculation, in fact the previous one is the last of the period that we are going to calculate.
 
-%say about problems due to offset
-%say that we can use one term and we don't need theta, is an observation
-%say how to calculate theta and  period
-%say int he next chapter that for a lot of reasons the experiment is doen using large amplitude, say why
-%say the reasons of the angle choosen
+\subsection{Filter and Clean Raw Data}
+After have made the first experiments we have seen a normal thing: the raw data obtained by accelerometer are not so good.\\
+There are two main problems:
+\begin{itemize}
+	\item the accelerometer is not perfect and has an error
+	\item the data have some pulses
+\end{itemize} \par
 
-\textbf{Please make sure you explicitely cite the figures.
-\prettyref{fig:polimi_logo} shows the logo of Politecnico di Milano.
-Please also make sure you provide each figure with an exhaustive caption.}
+Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETES, so we needed just to find them.\\
+To do that we put the card in the two horizontal position and applied the following formula for each of both sides:
+\begin{center}
+	$ offset = \frac{abs(1000-real\_value)}{2}$
+\end{center}\\
+then we have taken the mean of both values.\\
+The values can have a little difference due to other errors not related to shift.\par
 
-\lipsum[1-12]
-
-\begin{figure}
-\centering\includegraphics[width=5cm]{polimi}
-\caption{POLIMI logo, which is used by this document as a placeholder.}
-\label{fig:polimi_logo}
-\end{figure}
+While for the second problem we decided to implement a low pass filter to filter the data, the formula used is:
+\begin{center}
+	$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$
+\end{center}\\
+\textbf{CITE}\\
+Where y is the value stored and x is the raw value.\\
+Of course the higher alpha is, the more high frequency values are considered so the new value has an higher weight.
 
 \section{Experimental evaluation}
 \lipsum[1]
 \subsection{Experimental setup}
 \lipsum[1-2]
 \subsection{Results}
+%say how we have choosen alpha and other things (maybe also offsets)
+%say in this chapter that for a lot of reasons the experiment is doen using large amplitude, say why
+
 \textbf{Please make sure you explicitely cite the tables.
 \prettyref{tab:a_complex_table} shows a complex table.
 Please also make sure you provide each table with an exhaustive caption.
