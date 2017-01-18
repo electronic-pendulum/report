@@ -29,7 +29,7 @@ Our work can be divided in three distinct phases:
 \textbf{Maybe the following text should be inserted in "summary of the work"}
 
 We drafted the algorithm to calculate the length of the wire. We decided to implement this algorithm in a raw simulator built by us in Javascript \cite{javascriptPrototype}. Then we developed it in MIOSIX.\\
-We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period) using raw data obtained by the accelerometer.
+We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period) using raw data obtained by the accelerometer and how to filter raw data.
 
 \subsection{Mathematical Model}
 We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: \\
@@ -62,9 +62,25 @@ We calculated the errors according to the values obtained using 3 members of the
 
 As we will see the max angle of the pendulum is of $\frac{\pi}{2}$ for that value the error is just of 1.8\%, an acceptable value.
 
+\subsection{Calculation of Data}
+Since there is friction that is not considered in our mathematical model we have to calculate period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact there a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this errors is smaller than error caused by friction. \textbf{HOW TO PROOF?}\par
+
+We have considered only a quarter of period, we have considered every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
+We store the min value of accelerometer for y axis, that is easily converted in an angle using:
+\begin{center}
+	$angle = \frac{\pi}{2} -asin(min(1.0, abs(\frac{y}{SCALE \cdot g})))$\\
+\end{center}
+The min function is used to avoid problems due to errors of accelerometer that could give values higher than 1. We used also abs since the sign is not important and this simplify everything.
+Besides store this we store also the timestamps of min value of y axis.\\
+We know that the max value of y axis when the pendulum is in vertical position, so when we see that the y is decrementing the pendulum is going up on the other side. So we have all data to calculate what we need.\par
+
+The $\theta_{max}$ is given by the  angle previous calculated (angle for min value of y axis).\\
+The period is given by the difference of timestamps, timestamp stored for min value of y axis and timestamp of vertical position (last position before decrementing).
+Of course we recognize that we have completed period in the next tick, when we are decrementing as explained previously. So we need to keep an history of the previous timestamp to use in the calculation, in fact the previous one is the last of the period that we are going to calculate.
+
+%say about problems due to offset
 %say that we can use one term and we don't need theta, is an observation
 %say how to calculate theta and  period
-%say the error in % using one term
 %say int he next chapter that for a lot of reasons the experiment is doen using large amplitude, say why
 %say the reasons of the angle choosen
 
