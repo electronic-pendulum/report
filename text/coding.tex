@@ -28,10 +28,8 @@ Our work can be divided in three distinct phases:
 \pagebreak
 
 \section{Design and implementation}
-\textbf{Maybe the following text should be inserted in "summary of the work"}
-
-We drafted the algorithm to calculate the length of the wire. We decided to implement this algorithm in a raw simulator built by us in Javascript \cite{javascriptPrototype}. Then we developed it in MIOSIX.\\
-We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period) using raw data obtained by the accelerometer and how to filter and clean raw data.
+We decided to implement the algorithm in a raw simulator built by us in Javascript \cite{javascriptPrototype}. Then we developed it in MIOSIX.\\
+We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period $T$) using raw data obtained by the accelerometer, how to filter and clean raw data and in which way we developed the driver for the accelerometer.
 
 \subsection{Mathematical Model}
 We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: 
@@ -83,17 +81,21 @@ There are two main problems:
 	\item the data have some pulses
 \end{itemize} \par
 
-Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETES, so we needed just to find them.\\
+Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETS, so we needed just to find them.\\
 To do that we put the card in the two horizontal position and applied the following formula for each of both sides:
 $$ offset = \frac{\left|1000-raw\_value\right|}{2}$$
 then we have taken the mean of both values. \\
 The values can have a little difference due to other errors not related to shift.\par
 
-While for the second problem we decided to implement a low pass filter to filter the data, the formula used is:
+While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data, the formula that we used is:
 $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 \textbf{CITE some scholar}\\
 Where y is the value stored and x is the raw value.\\
-Of course the higher alpha is, the more high frequency values are considered so the new value has an higher weight.
+Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.
+
+\subsection{LIS3DSH Driver}
+We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver register itself to the \texttt{devfs} filesystem. This behavior is similar to one that is commonly found in Linux. Thus from client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \\ The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon read operation requested by the client through the file handle. \\
+The configuration of the sensor's parameters and selection of relevant axis from which reads are later performed is carried out using the method \texttt{SPILIS3DSHDriver::ioctl()}. \\ We defined our set of commands and a \texttt{struct SPILIS3DSHDriver::Ioctl} that can be filled by the client when some sort of modification in the driver/sensor state is required, or it is filled by the method itself when a client request the current state of the driver/sensor. \\ With this approach we emphasize the fact that albeit simple, it gives enough flexibility in terms of API and extendability.
 
 \section{Experimental evaluation}
 \lipsum[1]
