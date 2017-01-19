@@ -12,6 +12,7 @@ In our case we model the setting as a simple gravity pendulum, i.e. We assumed t
 	\item the bob is a point mass,
 	\item motion occurs only in two dimensions,
 	\item the gravitational field is uniform,
+	\item the friction can be neglected,
 	\item the support does not move.
 \end{itemize}
 It is trivial to map the abstract case with our concrete one, in particular, the Discovery board is our bob and the USB cable is the rod. \\
@@ -21,7 +22,8 @@ Our work can be divided in three distinct phases:
 \begin{itemize}
 	\item we analyzed the datasheet of on-board accelerometer and developed a driver that it is able to interact with it while exposing a high-level interface that simplified interaction,
 	\item we derived the mathematical model of the physical system in order to be able to separate between variables that we can measure and the unknown that we should compute,
-	\item we put all together by means of an algorithm coupled with some parameter tuning and complementary solutions as a result of various experiments. 
+	\item we drafted an algorithm to calculate the length of the wire, and evaluate its correctness using a simulator,
+	\item we implemented the final algorithm coupled with some parameter tuning and complementary solutions as a result of various experiments. 
 \end{itemize}
 \pagebreak
 
