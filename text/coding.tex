@@ -91,13 +91,16 @@ While for the second problem we decided to implement a low pass filter to remove
 $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 \textbf{CITE some scholar}\\
 Where y is the value stored and x is the raw value.\\
-Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.
+Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\\
+\textbf{TALK about filtering small angles and periods}
 
 \subsection{LIS3DSH Driver}
 We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver register itself to the \texttt{devfs} filesystem. This behavior is similar to one that is commonly found in Linux. Thus from client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \\ The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon read operation requested by the client through the file handle. \\
-The configuration of the sensor's parameters and selection of relevant axis from which reads are later performed is carried out using the method \texttt{SPILIS3DSHDriver::ioctl()}. \\ We defined our set of commands and a \texttt{struct SPILIS3DSHDriver::Ioctl} that can be filled by the client when some sort of modification in the driver/sensor state is required, or it is filled by the method itself when a client request the current state of the driver/sensor. \\ With this approach we emphasize the fact that albeit simple, it gives enough flexibility in terms of API and extendability.
+The configuration of the sensor's parameters and selection of relevant axis from which reads are later performed is carried out using the method \texttt{SPILIS3DSHDriver::ioctl()}. \\ We defined our set of commands and a \texttt{struct SPILIS3DSHDriver::Ioctl} that can be filled by the client when some sort of modification in the driver/sensor state is required, or it is filled by the method itself when a client request the current state of the driver/sensor. \\ With this approach we emphasize the fact that albeit simple, it gives enough flexibility in terms of API and extendability.\\
+\textbf{TALK about protocol}
 
 \section{Experimental evaluation}
+\textbf{USE soem par to improve the reading}
 We conducted several experiments with different hypotheses and values for the parameters defined in the previous section. \\
 We followed a step by step approach in order to test our models and procedures. This permitted us to validate our solutions and quickly assess the correctness of our model. \\
 As explained shortly, during this phase we faced some issues that we had to solve in order to derive the requested results. \\
@@ -116,17 +119,18 @@ It's here that we found out a couple of issues that we had to solve:
 \end{itemize}
 With these forethoughts, the experiment is simply consist of letting the board oscillate freely after releasing it starting from a particular angle. We noticed that some delay between every iteration of the main loop must be introduced since at beginning the ZigBees must synchronize each other in order to establish correct communication. If we send data with a very high ratio the internal buffer fills up and some strange things might happen, for instance some random lags appear, moreover this situation might still occur even after proper synchronization.
 \subsubsection{Estimating the length of the cable}
-We are able now to estimate the required unknown variable. \\ We applied the formula explained before and coupled with another low pass filter, the length of the cable is displayed on the PC. Using some measuring tool, we assessed the real length of the cable and compared it with our estimated value. We found out that although the majority of the output is correct, seldom some strange and incorrect values are displayed. This is not so easy to justify, one possible reason is that the low pass filters are actually an approximation and for some ill-conditioned situations they simply fail to provide meaningful results. A possible future scenario might involve a more in depth study of these problems and possibly how to solve them.
+We are able now to estimate the required unknown variable. \\ We applied the formula explained before and coupled with another low pass filter, the length of the cable is displayed on the PC. Using some measuring tool, we assessed the real length of the cable and compared it with our estimated value. We found out that although the majority of the output is correct, seldom some strange and incorrect values are displayed. This is not so easy to justify, one possible reason is that the low pass filters are actually an approximation and for some ill-conditioned situations they simply fail to provide meaningful results. Another reason is that sometimes there are some impulse of data that imply that the algorithm does not work properly (it can stops itself in advance).\\
+A possible future scenario might involve a more in depth study of these problems and possibly how to solve them as we will quickly see in \textbf{CITE 4}.
 \subsection{Results}
 Given the previous set of experiments we derived the following results:
 \begin{itemize}
 	\item a good value for offset is $offset_y = 10$,
-	\item we assessed the correct estimation of well known angles like $30\si{\degree}$, $45\si{\degree}$, $60\si{\degree}$ and $90\si{\degree}$. We didn't evaluated angles $> 90\si{\degree}$, since they are not feasible with our model,
+	\item we assessed the correct estimation of well known angles like $30\si{\degree}$, $45\si{\degree}$, $60\si{\degree}$ and $90\si{\degree}$. We did not evaluated angles $> 90\si{\degree}$, since they are not feasible with our model,
 	\item for $\alpha_y$, we evaluated different possible values in the interval $0.5 \leq \alpha_y < 1 $. That lower bound is justified by the fact that we are more interested in new values than old ones, while still considering by some extent the history. We found that a good choice is $\alpha_y = 0.5$ that gives equal importance to both old and new values,
 	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than old ones.
 	\item the measurement of the period while the board is moving down is more reliable than in the opposite case. \textbf{WHY? ARE WE SURE ABOUT THAT?}
 \end{itemize}
-It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. 
+It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the card.
 With these hypotheses we are able to correctly estimate, in the majority of the cases, the cable length with a precision of less than \SI{1}{\cm}.
 
 \section{Conclusions and Future Works}
@@ -142,7 +146,7 @@ While to avoid errors we can introduce some logic to detect wrong behavior and c
 \begin{itemize}
 	\item card moved by hand
 	\item the cable, since it is not a perfect rope, can create wrong movements and also some big rotations (small are negligible)
-	\item with some rotation the card could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops when there is a reduction of values as explained in  \textbf{CITE 2.2})
+	\item with some rotation the card could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in  \textbf{CITE 2.2})
 	\item card can receive a force at the beginning of the oscillation that makes first data not real
 \end{itemize}
 Some of them are easy to solve or it is easy find a workaround. For example to solve in part the last problem (external force) we can simply see if the accelerometer resultant is same to g.
