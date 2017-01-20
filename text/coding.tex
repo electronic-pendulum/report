@@ -82,7 +82,7 @@ There are two main problems:
 \end{itemize} \par
 
 Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETS, so we needed just to find them.\\
-To do that we put the card in the two horizontal position and applied the following formula for each of both sides:
+To do that we put the board in the two horizontal position and applied the following formula for each of both sides:
 $$ offset = \frac{\left|1000-raw\_value\right|}{2}$$
 then we have taken the mean of both values. \\
 The values can have a little difference due to other errors not related to shift.\par
@@ -130,7 +130,7 @@ Given the previous set of experiments we derived the following results:
 	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than old ones.
 	\item the measurement of the period while the board is moving down is more reliable than in the opposite case. \textbf{WHY? ARE WE SURE ABOUT THAT?}
 \end{itemize}
-It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the card.
+It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
 With these hypotheses we are able to correctly estimate, in the majority of the cases, the cable length with a precision of less than \SI{1}{\cm}.
 
 \section{Conclusions and Future Works}
@@ -144,10 +144,10 @@ There are some different things that can be implemented to improve the applicati
 To increase precision there are some improvements that we can do, such as: use more terms in the series, consider the friction, make a mean of value obtained (for example for period) and so on.\\
 While to avoid errors we can introduce some logic to detect wrong behavior and consequentially wrong data, common situations are:
 \begin{itemize}
-	\item card moved by hand
+	\item board moved by hand
 	\item the cable, since it is not a perfect rope, can create wrong movements and also some big rotations (small are negligible)
-	\item with some rotation the card could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in  \textbf{CITE 2.2})
-	\item card can receive a force at the beginning of the oscillation that makes first data not real
+	\item with some rotation the board could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in  \textbf{CITE 2.2})
+	\item board can receive a force at the beginning of the oscillation that makes first data not real
 \end{itemize}
 Some of them are easy to solve or it is easy find a workaround. For example to solve in part the last problem (external force) we can simply see if the accelerometer resultant is same to g.
 
