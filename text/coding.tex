@@ -1,12 +1,12 @@
 \section{Introduction}
 Throughout the years, a lot of efforts were spent to study and derive the laws that govern the motion of a pendulum. \\
 In many classical experiments, an observer measures directly the necessary physical quantities in order to estimate some other ones. \\
-In our setting, We used an STM32F4Discovery (from now simply Discovery) board that, together with its sensors and an algorithm, it is able to compute directly and provide to the observer the requested results while the experiment is performed. \\
+In our setting, we used an STM32F4Discovery (from now simply Discovery) board that, together with its sensors and an algorithm, it is able to compute directly and to provide to the observer the requested results while the experiment is performed. \\
 The Discovery board is an electronic device equipped with an ARM CortexM4 microcontroller and various on-board devices. For this project, we used the LIS3DSH accelerometer that measures accelerations of the board in the three axes, and a serial port that enables communication between the board and a Personal Computer that eventually displays the results. \\
 
 \subsection{Problem statement}
-A pendulum it is a well studied physical system in which a weight is suspended from a pivot and it is able to oscillate freely. It is often difficult to find exact solutions in the general case so usually, some assumptions are made in order to make the problem easier to model and solve. \\
-In our case we model the setting as a simple gravity pendulum, i.e. We assumed that:
+A pendulum is a well studied physical system in which a weight is suspended from a pivot and it is able to oscillate freely. It is often difficult to find exact solutions in the general case so usually, some assumptions are made in order to make the problem easier to be modeled and solved. \\
+In our case we model the setting as a simple gravity pendulum, i.e. assuming that:
 \begin{itemize}
 	\item the rod or cord on which the bob swings is massless, inextensible and always remains taut,
 	\item the bob is a point mass,
@@ -20,9 +20,9 @@ The aim of the project is to estimate the length of the cable while the board os
 \subsection{Summary of the work}
 Our work can be divided in three distinct phases:
 \begin{itemize}
-	\item we analyzed the datasheet \cite{accelerometerDatasheet} of on-board accelerometer and developed a driver that it is able to interact with it while exposing a high-level interface that simplified interaction,
-	\item we derived the mathematical model of the physical system in order to be able to separate between variables that we can measure and the unknown that we should compute,
-	\item we drafted an algorithm to calculate the length of the cable, and evaluate its correctness using a simulator,
+	\item we analyzed the datasheet \cite{accelerometerDatasheet} of on-board accelerometer and developed a driver that is able to interact with it while exposing a high-level interface that simplified interaction,
+	\item we derived the mathematical model of the physical system in order to be able to separate between variables that we can measure and the unknown ones that we should compute,
+	\item we drafted an algorithm to calculate the length of the cable, and evaluated its correctness using a simulator,
 	\item we implemented the final algorithm coupled with some parameter tuning and complementary solutions as a result of various experiments. 
 \end{itemize}
 \pagebreak
@@ -58,56 +58,57 @@ We calculated the errors according to the values obtained using 3 terms of the s
 	\end{center}
 \end{table}
 
-Since the pendulum is moved only by the ground acceleration and the cable is not rigid the max angle of the pendulum is of $\frac{\pi}{2}$ for that value the error using 2 terms is just of 1.8\%, an acceptable value. So 2 terms are enough, as used in the previous formula.
+Since the pendulum is moved only by the ground acceleration and the cable is not rigid, the max angle of the pendulum is $\frac{\pi}{2}$ for that value the error using 2 terms is just of 1.8\% (an acceptable value). So 2 terms are enough, as used in the previous formula.
 
 \subsection{Calculation of Data}
 \label{sec:datacalc}
 
-Since there is friction that is not considered in our mathematical model we have to calculate period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact there a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this errors is smaller than error caused by friction. We verified this thing in experimental way.\par
+Since there is friction that is not considered in our mathematical model we have to calculate the period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this error is smaller than the error caused by friction. We verified this thing in an experimental way.\par
 
-We have considered only a quarter of period, we have considered every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
+We have considered only a quarter of period, in particular every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
 We store the min value of accelerometer for y axis, that is easily converted in an angle using:
 $$angle = \frac{\pi}{2} -\arcsin\left(\min\left\lbrace1.0, \left|\frac{y}{SCALE \cdot g}\right|\right\rbrace\right)$$
-The min function is used to avoid domain problems due to errors of accelerometer that could give values higher than 1. We used also abs since the sign is not important and this simplify everything.
-Besides store this we store also the timestamps of min value of y axis.\\
-We know that the max value of y axis when the pendulum is in vertical position, so when we see that the y is decrementing the pendulum is going up on the other side. So we have all data to calculate what we need.\par
+The min function is used to avoid domain problems due to errors of accelerometer that could give values higher than 1. We also used abs since the sign is not important and this simplifies everything.
+Besides storing this we store also the timestamps of min value of y axis.\\
+We know that the max value of y axis is when the pendulum is in vertical position, so when we see that the y is decrementing the pendulum is going up on the other side. So we have all data to calculate what we need.\par
 
-The $\theta_{max}$ is given by the  angle previous calculated (angle for min value of y axis).\\
+The $\theta_{max}$ is given by the  angle previously calculated (angle for min value of y axis).\\
 The period is given by the difference of timestamps, timestamp stored for min value of y axis and timestamp of vertical position (last position before decrementing).
-Of course we recognize that we have completed period in the next tick, when we are decrementing as explained previously. So we need to keep an history of the previous timestamp to use in the calculation, in fact the previous one is the last of the period that we are going to calculate.
+Of course we recognize that we have completed the period in the next tick, when we are decrementing as explained previously. So we need to keep an history of the previous timestamp to be used in the calculation, in fact the previous one is the last of the period that we are going to calculate.
 
 \subsection{Filter and Clean Raw Data}
-After have made the first experiments we have seen a normal thing: the raw data obtained by accelerometer are not so good.\\
+After having done the first experiments we have seen a normal thing: the raw data obtained by accelerometer are not so good.\\
 There are two main problems:
 \begin{itemize}
 	\item the accelerometer is not perfect and has an error
 	\item the data have some pulses
 \end{itemize} \par
 
-Fortunately for the first problems the main errors are just a shift and can be resolved internally by the accelerometer setting the right OFFSETS, so we needed just to find them.\\
-To do that we put the board in the two horizontal position and applied the following formula for each of both sides:
+Fortunately for the first problem the main errors are just shift errors and can be resolved internally by the accelerometer setting the right OFFSETS, so we needed just to find them.\\
+To do that we put the board in the two horizontal positions and we applied the following formula for each of both sides:
 $$ offset = \frac{\left|1000-raw\_value\right|}{2}$$
 then we have taken the mean of both values. \\
 The values can have a little difference due to other errors not related to shift.\par
 
-While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data. Implementing an exact low pass filter it is tedious and the equations that describe its behavior are computationally expensive to compute. We resort to an approximated model, and the formula \cite{Holt20045} that we used is:
+While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data. Implementing an exact low pass filter it is tedious and the equations that describe its behavior are computationally expensive to compute. We solved using an approximated model, and the formula \cite{Holt20045} that we used is:
 $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 Where y is the value stored and x is the raw value.\\
 Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\par
 
-We have also to filter (exclude) small data (small angles and small periods obtained) as shown in~\ref{sec:results} to avoid to measure non right movements like the ones obtained during the movement of the board by hands.
+We have also to filter (exclude) small data (small angles and small periods obtained) as shown in~\ref{sec:results}in order  to avoid to measure non right movements like the ones obtained during the movement of the board by hands.
 
 \subsection{LIS3DSH Driver}
-We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver register itself to the \texttt{devfs} filesystem. This behavior is similar to one that is commonly found in Linux. Thus from client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \par The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon read operation requested by the client through the file handle. \\
-The configuration of the sensor's parameters and selection of relevant axis from which reads are later performed is carried out using the method \texttt{SPILIS3DSHDriver::ioctl()}. \\ We defined our set of commands and a \texttt{struct SPILIS3DSHDriver::Ioctl} that can be filled by the client when some sort of modification in the driver/sensor state is required, or it is filled by the method itself when a client request the current state of the driver/sensor. \\ With this approach we emphasize the fact that albeit simple, it gives enough flexibility in terms of API and extendability.
+We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver registers itself to the \texttt{devfs} filesystem. This behavior is similar to the one that is commonly found in Linux. Thus from the client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \par The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon a read operation is requested by the client through the file handle. \\
+The configuration of the sensor's parameters and the selection of relevant axis from which reads are later performed is carried out using the method \texttt{SPILIS3DSHDriver::ioctl()}. \\ We defined our set of commands and a \texttt{struct SPILIS3DSHDriver::Ioctl} that can be filled by the client when some sort of modifications in the driver/sensor state are required, or it is filled by the method itself when a client requests the current state of the driver/sensor. \\ With this approach we emphasize the fact that albeit simple, it gives enough flexibility in terms of API and extendability.
 \par
-The physical protocol used for communicating with the sensor is Serial Peripheral Interface \cite{accelerometerDatasheet}\cite{STM32F4RefMan}  (SPI). It is one of most widely used for interfacing a microcontroller with external devices and other microcontrollers. \\  
+The physical protocol used for communicating with the sensor is Serial Peripheral Interface \cite{accelerometerDatasheet}\cite{STM32F4RefMan}  (SPI). It is one of the most widely used for interfacing a microcontroller with external devices and other microcontrollers. \\  
 Initialization of the serial link is carried out in three phases:
 \begin{itemize}
 	\item GPIO pins configuration, in order to utilize this protocol, $3 + n$ physical connections: \texttt{SCLK} for clock that synchronizes all peripherals, \texttt{MISO} for data coming from slave devices, \texttt{MOSI} for data going to slave devices, and $n$ \texttt{CS} pins, that each one of them signals to the matching slave peripheral that it has acquired the bus and can transfer data using it. In the Discovery board these pins are actually GPIO ones \cite{STM32F4RefMan}, that are configured for alternate function and are permanently consumed as long as SPI is utilized,
 	\item SPI Master initialization, SPI can be used by design in a shared environment by means of a bus. Before any actual exchange of data can be performed, the master component, which carries out the arbitration of such bus, must be properly initialized,
-	\item actual sensor initialization, the driver check that the sensor is actually present, and correctly replies to the commands. By default, all three axes are enabled and the output data rate is set to \SI{400}{\Hz}.
+	\item actual sensor initialization, the driver checks that the sensor is actually present, and correctly replies to the commands. By default, all three axes are enabled and the output data rate is set to \SI{400}{\Hz}.
 \end{itemize}
+\pagebreak
 
 \section{Experimental evaluation}
 We conducted several experiments with different hypotheses and values for the parameters defined in the previous section. \\
@@ -116,17 +117,17 @@ As explained shortly, during this phase we faced some issues that we had to solv
 We will demonstrate that our design and implementation worked fairly well in experiments.
 \subsection{Experimental setup}
 \subsubsection{Evaluating the accelerometer performance}
-In this step we checked that both driver and accelerometer worked well. As already explained we discovered that adjustments were needed in order to able to use the acquired data for next step. In particular we determined the correct amount of offset that we need add to the raw values measured by the accelerometer. \par It is important to notice that although the sensor is the same for all Discovery boards, every instance has small differences between other ones so this means that our value might not work well for another boards thus this kind of calibration must be done every time a new board is used for experiments. \\ Besides this, no particular issues were found, the calibration procedure is simple enough and we are quite confident about the value that we determined.
+In this step we checked that both driver and accelerometer worked well. As already explained we discovered that adjustments were needed in order to be able to use the acquired data for the next step. In particular we determined the correct amount of offset that we need to add to the raw values measured by the accelerometer. \par It is important to notice that although the sensor is the same for all Discovery boards, every instance has small differences between other ones so this means that our value might not work well for other boards thus this kind of calibration must be done every time a new board is used for experiments. \\ Besides this, no particular issues were found, the calibration procedure is simple enough and we are quite confident about the value we determined.
 \subsubsection{Measuring the angle}
-Given the data provided by the accelerometer and the formula to compute the angle, we are now able to verify if these values match the physical situation. During this step, we became aware by the fact that using a PC to power up the board isn't too much comfortable so we used an external power source: a simple group of batteries should be enough, in our case we used a Powerbank since it already has the capability to distribute power by means of an USB port. It turned out that this solution worked extremely well also in the next steps so, from now on, we will use this method while running all the experiments. \par The angle is measured w.r.t the vertical position, i.e. from the point of stable equilibrium of the pendulum. Apart from this issue, no other ones were encountered: no particular tools were used in the real world to measure the angle, only a visive check, but again, given the simplicity of the experiment, we could assure that the values computed by the board are correct. 
+Given the data provided by the accelerometer and the formula to compute the angle, we are now able to verify if these values match the physical situation. During this step, we became aware by the fact that using a PC to power up the board is not too much comfortable so we used an external power source: a simple group of batteries should be enough, in our case we used a Powerbank since it already has the capability to distribute power by means of an USB port. It turned out that this solution worked extremely well also in the next steps so, from now on, we will use this method while running all the experiments. \par The angle is measured w.r.t the vertical position, i.e. from the point of stable equilibrium of the pendulum. Apart from this issue, no other ones were encountered: no particular tools were used in the real world to measure the angle, only a visive check, but again, given the simplicity of the experiment, we could assure that the values computed by the board are correct. 
 \subsubsection{Measuring the period}
 At this step, the experiment more or less resembles the final one, except for the fact that values displayed on the computer is the angle $\theta_{max}$ coupled with the period. \\
-It's here that we found out a couple of issues that we had to solve:
+It is here that we found out a couple of issues that we had to solve:
 \begin{itemize}
-	\item \textit{Serial communication}, the board uses some pins attached to it for implementing the serial port (not the USB port itself), so another cable must be used in order to be able to display the values on the PC while running the experiments. This poses a serious problem: this new cable introduce a lot of resistance that completely prevents the board from oscillating! We solved the issue by substituting the cable with a ZigBee board. This device, coupled with a receiver attached to the PC through an USB port, uses a radio frequency for transmitting data using the serial interface, thus with little effort and no need to resort to some fancy communication protocols we are able to send a stream of data wirelessly while still using the old and simple serial interface.
-	\item \textit{Pulses}, the main loop of the algorithm reads continuously fresh data from the sensors, since we are leaving in a real world, and although we modeled our problem with only one dimensional variable, sometimes, during oscillations, the board rotates briefly on its other two axes. This situation, amplified by the impulsive behavior of data showed that the measurements of the period were incorrect. As already explained, by using a low pass filter on top of data acquired by accelerometer we are able to significantly boost the performance of our system up to the point where values become correct enough for a good estimation of the cable length.
+	\item \textit{Serial communication}, the board uses some pins attached to it for implementing the serial port (not the USB port itself), so another cable must be used in order to be able to display the values on the PC while running the experiments. This poses a serious problem: this new cable introduces much resistance that completely prevents the board from oscillating! We solved the issue by substituting the cable with a ZigBee board. This device, coupled with a receiver attached to the PC through an USB port, uses a radio frequency for transmitting data using the serial interface, thus with little effort and no need to resort to some fancy communication protocols we are able to send a stream of data via wireless while still using the old and simple serial interface.
+	\item \textit{Pulses}, the main loop of the algorithm reads continuously fresh data from the sensors, since we are living in a real world, and although we modeled our problem with only one dimensional variable, sometimes, during oscillations, the board rotates briefly on its other two axes. This situation, amplified by the impulsive behavior of data, showed that the measurements of the period were incorrect. As already explained, by using a low pass filter on top of data acquired by accelerometer we are able to significantly boost the performance of our system up to the point where values become correct enough for a good estimation of the cable length.
 \end{itemize}
-With these forethoughts, the experiment is simply consist of letting the board oscillate freely after releasing it starting from a particular angle. We noticed that some delay between every iteration of the main loop must be introduced since at beginning the ZigBees must synchronize each other in order to establish correct communication. If we send data with a very high ratio the internal buffer fills up and some strange things might happen, for instance some random lags appear, moreover this situation might still occur even after proper synchronization.\par
+With these forethoughts, the experiment simply consists of letting the board oscillate freely after releasing it starting from a particular angle. We noticed that some delay between every iteration of the main loop must be introduced since at beginning the ZigBees must synchronize each other in order to establish a correct communication. If we send data with a very high ratio the internal buffer fills up and some strange things might happen, for instance some random lags appear, moreover this situation might still occur even after proper synchronization.\par
 Moreover we used this phase to check some assumptions done in the design such as the error caused by friction as explained in~\ref{sec:datacalc}.
 \subsubsection{Estimating the length of the cable}
 We are able now to estimate the required unknown variable. \\ We applied the formula explained before and coupled with another low pass filter, the length of the cable is displayed on the PC. Using some measuring tool, we assessed the real length of the cable and compared it with our estimated value. We found out that although the majority of the output is correct, seldom some strange and incorrect values are displayed. \par This is not so easy to justify, one possible reason is that the low pass filters are actually an approximation and for some ill-conditioned situations they simply fail to provide meaningful results. Another reason is that sometimes there are some impulse of data that imply that the algorithm does not work properly (it can stops itself in advance).\\
@@ -137,12 +138,13 @@ Given the previous set of experiments we derived the following results:
 \begin{itemize}
 	\item a good value for offset is $offset_y = 10$,
 	\item we assessed the correct estimation of well known angles like $30\si{\degree}$, $45\si{\degree}$, $60\si{\degree}$ and $90\si{\degree}$. We did not evaluated angles $> 90\si{\degree}$, since they are not feasible with our model (as explained previously in section~\ref{sec:mathmodel}),
-	\item for $\alpha_y$, we evaluated different possible values in the interval $0.5 \leq \alpha_y < 1 $. That lower bound is justified by the fact that we are more interested in new values than old ones, while still considering by some extent the history. We found that a good choice is $\alpha_y = 0.5$ that gives equal importance to both old and new values,
-	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than old ones.
+	\item for $\alpha_y$, we evaluated different possible values in the interval $0.5 \leq \alpha_y < 1 $. That lower bound is justified by the fact that we are more interested in new values than in old ones, while still considering by some extent the history. We found that a good choice is $\alpha_y = 0.5$ that gives equal importance to both old and new values,
+	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than in old ones.
 	\item we verified through experiments that the measurement of the period while the board is moving down is more reliable than in the opposite case.
 \end{itemize}
-It is important to notice that these experiment were conducted with angles about $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
+It is important to notice that these experiments were conducted with angles $\gtrsim 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
 With these hypotheses we are able to correctly estimate, in the majority of the cases, the cable length with a precision of less than \SI{1}{\cm}.
+\pagebreak
 
 \section{Conclusions and Future Works}
 \label{sec:conclusions}
