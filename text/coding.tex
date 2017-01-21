@@ -63,7 +63,7 @@ Since the pendulum is moved only by the ground acceleration and the cable is not
 \subsection{Calculation of Data}
 \label{sec:datacalc}
 
-Since there is friction that is not considered in our mathematical model we have to calculate period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact there a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this errors is smaller than error caused by friction. \textbf{HOW TO PROOF?}\par
+Since there is friction that is not considered in our mathematical model we have to calculate period and $\theta_{max}$ in the shortest time possible, even if this means measurements errors. In fact there a single measurement or a small measurement is not so good like the one obtained by a mean of measurements, but this errors is smaller than error caused by friction. We verified this thing in experimental way.\par
 
 We have considered only a quarter of period, we have considered every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
 We store the min value of accelerometer for y axis, that is easily converted in an angle using:
@@ -93,8 +93,9 @@ The values can have a little difference due to other errors not related to shift
 While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data. Implementing an exact low pass filter it is tedious and the equations that describe its behavior are computationally expensive to compute. We resort to an approximated model, and the formula \cite{Holt20045} that we used is:
 $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 Where y is the value stored and x is the raw value.\\
-Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\\
-\textbf{TALK about filtering small angles and periods}
+Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\par
+
+We have also to filter (exclude) small data (small angles and small periods obtained) as shown in~\ref{sec:results} to avoid to measure non right movements like the ones obtained during the movement of the board by hands.
 
 \subsection{LIS3DSH Driver}
 We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver register itself to the \texttt{devfs} filesystem. This behavior is similar to one that is commonly found in Linux. Thus from client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \par The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon read operation requested by the client through the file handle. \\
@@ -125,11 +126,13 @@ It's here that we found out a couple of issues that we had to solve:
 	\item \textit{Serial communication}, the board uses some pins attached to it for implementing the serial port (not the USB port itself), so another cable must be used in order to be able to display the values on the PC while running the experiments. This poses a serious problem: this new cable introduce a lot of resistance that completely prevents the board from oscillating! We solved the issue by substituting the cable with a ZigBee board. This device, coupled with a receiver attached to the PC through an USB port, uses a radio frequency for transmitting data using the serial interface, thus with little effort and no need to resort to some fancy communication protocols we are able to send a stream of data wirelessly while still using the old and simple serial interface.
 	\item \textit{Pulses}, the main loop of the algorithm reads continuously fresh data from the sensors, since we are leaving in a real world, and although we modeled our problem with only one dimensional variable, sometimes, during oscillations, the board rotates briefly on its other two axes. This situation, amplified by the impulsive behavior of data showed that the measurements of the period were incorrect. As already explained, by using a low pass filter on top of data acquired by accelerometer we are able to significantly boost the performance of our system up to the point where values become correct enough for a good estimation of the cable length.
 \end{itemize}
-With these forethoughts, the experiment is simply consist of letting the board oscillate freely after releasing it starting from a particular angle. We noticed that some delay between every iteration of the main loop must be introduced since at beginning the ZigBees must synchronize each other in order to establish correct communication. If we send data with a very high ratio the internal buffer fills up and some strange things might happen, for instance some random lags appear, moreover this situation might still occur even after proper synchronization.
+With these forethoughts, the experiment is simply consist of letting the board oscillate freely after releasing it starting from a particular angle. We noticed that some delay between every iteration of the main loop must be introduced since at beginning the ZigBees must synchronize each other in order to establish correct communication. If we send data with a very high ratio the internal buffer fills up and some strange things might happen, for instance some random lags appear, moreover this situation might still occur even after proper synchronization.\par
+Moreover we used this phase to check some assumptions done in the design such as the error caused by friction as explained in~\ref{sec:datacalc}.
 \subsubsection{Estimating the length of the cable}
 We are able now to estimate the required unknown variable. \\ We applied the formula explained before and coupled with another low pass filter, the length of the cable is displayed on the PC. Using some measuring tool, we assessed the real length of the cable and compared it with our estimated value. We found out that although the majority of the output is correct, seldom some strange and incorrect values are displayed. \par This is not so easy to justify, one possible reason is that the low pass filters are actually an approximation and for some ill-conditioned situations they simply fail to provide meaningful results. Another reason is that sometimes there are some impulse of data that imply that the algorithm does not work properly (it can stops itself in advance).\\
 A possible future scenario might involve a more in depth study of these problems and possibly how to solve them as we will quickly see in section~\ref{sec:conclusions}.
 \subsection{Results}
+\label{sec:results}
 Given the previous set of experiments we derived the following results:
 \begin{itemize}
 	\item a good value for offset is $offset_y = 10$,
@@ -138,7 +141,7 @@ Given the previous set of experiments we derived the following results:
 	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than old ones.
 	\item we verified through experiments that the measurement of the period while the board is moving down is more reliable than in the opposite case.
 \end{itemize}
-It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
+It is important to notice that these experiment were conducted with angles about $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
 With these hypotheses we are able to correctly estimate, in the majority of the cases, the cable length with a precision of less than \SI{1}{\cm}.
 
 \section{Conclusions and Future Works}
