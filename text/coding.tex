@@ -32,7 +32,7 @@ We decided to implement the algorithm in a raw simulator built by us in Javascri
 We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period $T$) using raw data obtained by the accelerometer, how to filter and clean raw data and in which way we developed the driver for the accelerometer.
 
 \subsection{Mathematical Model}
-We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula: 
+We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula \cite{pendulumSeries}: 
 $$T = 2 \pi \sqrt{\frac{L}{g}} \left(1 + \frac{1}{16} \theta_0^2 + \frac{11}{3072} \theta_0^4 + ...\right)$$
 Stopping at the second term of the series we are able to calculate the length of the cable ($L$) using period and $\theta_0$, i.e. $\theta_{max}$ , we obtain:
 $$ L = g \cdot \frac{T^2}{4 \cdot \pi^2 \cdot \left(1 + \frac{\theta_0^2}{16}\right)^2}$$
