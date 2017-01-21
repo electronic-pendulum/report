@@ -148,13 +148,8 @@ While to avoid errors we can introduce some logic to detect wrong behavior and c
 \begin{itemize}
 	\item board moved by hand
 	\item the cable, since it is not a perfect rope, can create wrong movements and also some big rotations (small are negligible)
-<<<<<<< HEAD
-	\item with some rotation the card could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in section~\ref{sec:datacalc}.
-	\item card can receive a force at the beginning of the oscillation that makes first data not real
-=======
-	\item with some rotation the board could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in  \textbf{CITE 2.2})
+	\item with some rotation the board could be receive some pulse less than the previous value, that can stop the actual algorithm (since it stops itself when there is a reduction of values as explained in section~\ref{sec:datacalc}.
 	\item board can receive a force at the beginning of the oscillation that makes first data not real
->>>>>>> 85409905d9eba9517b8759f40167e5db3c7e1c08
 \end{itemize}
 Some of them are easy to solve or it is easy find a workaround. For example to solve in part the last problem (external force) we can simply see if the accelerometer resultant is same to g.
 
