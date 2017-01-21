@@ -20,7 +20,7 @@ The aim of the project is to estimate the length of the cable while the board os
 \subsection{Summary of the work}
 Our work can be divided in three distinct phases:
 \begin{itemize}
-	\item we analyzed the datasheet of on-board accelerometer and developed a driver that it is able to interact with it while exposing a high-level interface that simplified interaction,
+	\item we analyzed the datasheet \cite{accelerometerDatasheet} of on-board accelerometer and developed a driver that it is able to interact with it while exposing a high-level interface that simplified interaction,
 	\item we derived the mathematical model of the physical system in order to be able to separate between variables that we can measure and the unknown that we should compute,
 	\item we drafted an algorithm to calculate the length of the cable, and evaluate its correctness using a simulator,
 	\item we implemented the final algorithm coupled with some parameter tuning and complementary solutions as a result of various experiments. 
@@ -68,7 +68,7 @@ Since there is friction that is not considered in our mathematical model we have
 We have considered only a quarter of period, we have considered every descending quarter so we measure a period every new half period (this partially solves the problems due to friction).\\
 We store the min value of accelerometer for y axis, that is easily converted in an angle using:
 $$angle = \frac{\pi}{2} -\arcsin\left(\min\left\lbrace1.0, \left|\frac{y}{SCALE \cdot g}\right|\right\rbrace\right)$$
-The min function is used to avoid problems due to errors of accelerometer that could give values higher than 1. We used also abs since the sign is not important and this simplify everything.
+The min function is used to avoid domain problems due to errors of accelerometer that could give values higher than 1. We used also abs since the sign is not important and this simplify everything.
 Besides store this we store also the timestamps of min value of y axis.\\
 We know that the max value of y axis when the pendulum is in vertical position, so when we see that the y is decrementing the pendulum is going up on the other side. So we have all data to calculate what we need.\par
 
