@@ -32,6 +32,7 @@ We decided to implement the algorithm in a raw simulator built by us in Javascri
 We will see the mathematical model, how to calculate the data we need ($\theta_{max}$ and period $T$) using raw data obtained by the accelerometer, how to filter and clean raw data and in which way we developed the driver for the accelerometer.
 
 \subsection{Mathematical Model}
+\label{sec:mathmodel}
 We did not considered the friction (since it is to complex to calculate), so the period of the gravity pendulum has the following series as period formula \cite{pendulumSeries}: 
 $$T = 2 \pi \sqrt{\frac{L}{g}} \left(1 + \frac{1}{16} \theta_0^2 + \frac{11}{3072} \theta_0^4 + ...\right)$$
 Stopping at the second term of the series we are able to calculate the length of the cable ($L$) using period and $\theta_0$, i.e. $\theta_{max}$ , we obtain:
@@ -89,9 +90,8 @@ $$ offset = \frac{\left|1000-raw\_value\right|}{2}$$
 then we have taken the mean of both values. \\
 The values can have a little difference due to other errors not related to shift.\par
 
-While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data, the formula that we used is:
+While for the second problem we decided to implement a low pass filter to remove the impulsive behavior of data. Implementing an exact low pass filter it is tedious and the equations that describe its behavior are computationally expensive to compute. We resort to an approximated model, and the formula \cite{Holt20045} that we used is:
 $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
-\textbf{CITE some scholar}\\
 Where y is the value stored and x is the raw value.\\
 Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\\
 \textbf{TALK about filtering small angles and periods}
@@ -126,10 +126,10 @@ A possible future scenario might involve a more in depth study of these problems
 Given the previous set of experiments we derived the following results:
 \begin{itemize}
 	\item a good value for offset is $offset_y = 10$,
-	\item we assessed the correct estimation of well known angles like $30\si{\degree}$, $45\si{\degree}$, $60\si{\degree}$ and $90\si{\degree}$. We did not evaluated angles $> 90\si{\degree}$, since they are not feasible with our model (as explained previously in \textbf{CITE 2.1}),
+	\item we assessed the correct estimation of well known angles like $30\si{\degree}$, $45\si{\degree}$, $60\si{\degree}$ and $90\si{\degree}$. We did not evaluated angles $> 90\si{\degree}$, since they are not feasible with our model (as explained previously in section~\ref{sec:mathmodel}),
 	\item for $\alpha_y$, we evaluated different possible values in the interval $0.5 \leq \alpha_y < 1 $. That lower bound is justified by the fact that we are more interested in new values than old ones, while still considering by some extent the history. We found that a good choice is $\alpha_y = 0.5$ that gives equal importance to both old and new values,
 	\item a similar reasoning can be done for $\alpha_{length}$, we again restricted the search space in the same interval as before, this time determining that a good value is $\alpha_{length} = 0.8$, so we are more interested in new values than old ones.
-	\item the measurement of the period while the board is moving down is more reliable than in the opposite case. \textbf{WHY? ARE WE SURE ABOUT THAT?}
+	\item we verified through experiments that the measurement of the period while the board is moving down is more reliable than in the opposite case.
 \end{itemize}
 It is important to notice that these experiment were conducted with angles $\geq 30\si{\degree}$, for multiple reasons. For instance we noticed that the estimation becomes more correct while the experiment proceeds. With low angles the duration is not long enough in order to come up with good results. Moreover we filtered low angles to avoid to make measurements during the moving of the board.
 With these hypotheses we are able to correctly estimate, in the majority of the cases, the cable length with a precision of less than \SI{1}{\cm}.
