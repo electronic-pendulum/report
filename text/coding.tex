@@ -95,7 +95,7 @@ $$ y_t = \alpha \cdot x_t + (1-\alpha) \cdot y_{t-1}$$
 Where y is the value stored and x is the raw value.\\
 Of course the higher alpha is, the more high frequency values are considered so the new value has more importance.\par
 
-We have also to filter (exclude) small data (small angles and small periods obtained) as shown in~\ref{sec:results}in order  to avoid measuring non right movements like the ones obtained during the movement of the board by hands.
+We have also to filter (exclude) small data (small angles and small periods obtained) as shown in~\ref{sec:results} in order  to avoid measuring non right movements like the ones obtained during the movement of the board by hands.
 
 \subsection{LIS3DSH Driver}
 We decided to implement the driver that is tightly integrated with MIOSIX, so to maximize reusability. In particular we inherited the base class \texttt{Device}, implementing its abstract methods. The driver registers itself to the \texttt{devfs} filesystem. This behavior is similar to the one that is commonly found in Linux. Thus from the client side, it is enough to know the name of the pseudo-file and open it much like one does for a canonical file in a mass-storage device.  \par The raw values acquired by the sensors are made available through the method \\ \texttt{SPILIS3DSHDriver::readBlock()} which is called by the \texttt{devfs} filesystem upon a read operation is requested by the client through the file handle. \\
